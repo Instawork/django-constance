@@ -61,8 +61,11 @@ class DatabaseBackend(Backend):
             stored = self._model._default_manager.filter(key__in=keys)
             for const in stored:
                 yield keys[const.key], const.value
-        except (OperationalError, ProgrammingError):
-            pass
+        except (OperationalError, ProgrammingError) as e:
+            logger.exception(
+                'Unable to retrieve key from database',
+                extra={'keys': keys, 'error': str(e)}
+            )
 
     def get(self, key):
         key = self.add_prefix(key)
@@ -93,7 +96,11 @@ class DatabaseBackend(Backend):
             constance, created = self._model._default_manager.get_or_create(
                 key=self.add_prefix(key), defaults={'value': value}
             )
-        except (OperationalError, ProgrammingError):
+        except (OperationalError, ProgrammingError) as e:
+            logger.exception(
+                'Unable to set key to database',
+                extra={'key': key, 'error': str(e)}
+            )
             # database is not created, noop
             return
 
