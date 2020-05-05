@@ -1,3 +1,4 @@
+import logging
 from django.core.cache import caches
 from django.core.cache.backends.locmem import LocMemCache
 from django.core.exceptions import ImproperlyConfigured
@@ -6,6 +7,8 @@ from django.db.models.signals import post_save
 
 from .. import Backend
 from ... import settings, signals, config
+
+logger = logging.getLogger('instawork.constance')
 
 
 class DatabaseBackend(Backend):
@@ -73,8 +76,8 @@ class DatabaseBackend(Backend):
         if value is None:
             try:
                 value = self._model._default_manager.get(key=key).value
-            except (OperationalError, ProgrammingError, self._model.DoesNotExist):
-                pass
+            except (OperationalError, ProgrammingError, self._model.DoesNotExist) as e:
+                logger.exception(e)
             else:
                 if self._cache:
                     self._cache.add(key, value)
