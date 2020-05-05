@@ -77,7 +77,10 @@ class DatabaseBackend(Backend):
             try:
                 value = self._model._default_manager.get(key=key).value
             except (OperationalError, ProgrammingError, self._model.DoesNotExist) as e:
-                logger.exception(e)
+                logger.exception(
+                    'Unable to retrieve key from database',
+                    extra={'key': key, 'error': str(e)}
+                )
             else:
                 if self._cache:
                     self._cache.add(key, value)
