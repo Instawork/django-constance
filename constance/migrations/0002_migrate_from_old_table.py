@@ -16,8 +16,9 @@ def _migrate_from_old_table(apps, schema_editor) -> None:
     quoted_string = ', '.join([connection.ops.quote_name(item) for item in ['id', 'key', 'value']])
     try:
         with connection.cursor() as cursor:
-            cursor.execute(f'INSERT INTO constance_constance ( {quoted_string} ) SELECT {quoted_string} FROM constance_config', [])
-            cursor.execute('DROP TABLE constance_config', [])
+            cursor.execute(f'INSERT INTO constance_constance ( {quoted_string} ) SELECT {quoted_string} FROM constance_config ON DUPLICATE KEY UPDATE value=constance_config.value', [])
+            #To allow old code to continue running as we transition
+            #cursor.execute('DROP TABLE constance_config', [])
     except DatabaseError as exc:
         logger.exception('copy data from old constance table to a new one')
 
